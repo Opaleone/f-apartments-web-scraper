@@ -1,0 +1,19 @@
+{
+  "name": "f-apartments-web-scraper",
+  "version": "1.0.0",
+  "description": "A web scraper for Apartments.com that will aggregate data about property listings for real estate analysis.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@types/cheerio": "^0.22.35",
+    "axios": "^1.7.7",
+    "cheerio": "^1.0.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.6.2"
+  }
+}
