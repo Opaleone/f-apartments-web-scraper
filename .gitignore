@@ -132,3 +132,6 @@ dist
 .DS_Store
 
 testData.txt
+entire-page.html
+flr-pln-details.json
+propertyFloorplans/
