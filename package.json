@@ -4,15 +4,19 @@
   "description": "A web scraper for Apartments.com that will aggregate data about property listings for real estate analysis.",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "npx ts-node index.ts"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@types/cheerio": "^0.22.35",
     "cheerio": "^1.0.0",
+    "jsdom": "^25.0.1",
     "ts-node": "^10.9.2",
     "typescript": "^5.6.2"
+  },
+  "devDependencies": {
+    "@types/cheerio": "^0.22.35",
+    "@types/jsdom": "^21.1.7"
   }
 }
