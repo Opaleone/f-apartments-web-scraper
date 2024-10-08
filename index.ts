@@ -1,4 +1,4 @@
-import dotenv from 'dotenv'
+import dotenv from 'dotenv';
 import https from 'https';
 import * as cheerio from 'cheerio';
 import readline from 'readline';
@@ -100,7 +100,7 @@ function subSites(url: string, city: string): void {
   }
 }
 
-const locationRegex = /([a-z]){0,256}-([a-z]){2}/g
+const locationRegex = /^([a-z]-?){1,40}[-]{1}?([a-z]){1,2}$/g;
 
 rl.question('What location do you want to search?\n', response => {
   if (locationRegex.test(response)) {
