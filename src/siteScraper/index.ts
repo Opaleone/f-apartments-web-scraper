@@ -1,10 +1,11 @@
 import dotenv from 'dotenv';
 import https from 'https';
 import * as cheerio from 'cheerio';
-import fs from 'fs';
 import { JSDOM } from 'jsdom';
 import { IFloorPlan, IProperty } from '../../Interfaces';
 dotenv.config();
+
+const allFloorPlans: IProperty[] = [];
 
 /**
  * Creates options object for https request
@@ -79,7 +80,7 @@ function subSites(url: string, city: string): void {
           }
 
           property.floorPlans = allFlrPlns;
-          fs.appendFile(`./propertyFloorPlans/${city}_${new Date().toJSON().split('T')[0]}.json`, JSON.stringify(property), (e) => console.error(e));
+          allFloorPlans.push(property);
         } else {
           console.log('Something went wrong?');
         }
@@ -96,7 +97,7 @@ function subSites(url: string, city: string): void {
  * @param siteURL 
  * @param city 
  */
-export default function scrapeSite(siteURL: string, city: string): void {
+export default function scrapeSite(siteURL: string, city: string): IProperty[] {
   try {
     const propertyURLArr: any = [];
     let encodedURL = encodeURIComponent(siteURL);
@@ -116,7 +117,8 @@ export default function scrapeSite(siteURL: string, city: string): void {
         }
       });
     }).end();
+    return allFloorPlans;
   } catch (e) {
-    console.error(e);
+    throw(e);
   }
 }
