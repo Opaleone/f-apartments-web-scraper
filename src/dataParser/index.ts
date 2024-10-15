@@ -1,4 +1,4 @@
-import data from '../../propertyFloorplans/georgetown-tx_2024-10-06.json';
+import { IProperty } from '../../Interfaces';
 import currencyToNumber from '../../utils';
 
 // data: object[]
@@ -8,7 +8,7 @@ import currencyToNumber from '../../utils';
  * @params Array of floorplans
  * @returns Array of averages of floorplans
  */
-export default function dataParser() {
+export default function dataParser(data: IProperty[]) {
   const allAverages: any = [];
 
   for (let i = 0; i < data.length; i++) {
