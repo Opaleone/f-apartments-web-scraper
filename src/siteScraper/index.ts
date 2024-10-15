@@ -9,14 +9,12 @@ const allFloorPlans: IProperty[] = [];
 
 /**
  * Creates options object for https request
- * 
  * ```ts
  * return {
  *  hostname,
  *  path
  * }
  * ```
- * 
  * @param encodedURL string
  * @returns object
  */
@@ -29,8 +27,6 @@ export const createOptions = (encodedURL: string): object => {
 
 /**
  * Executes a https request for a property within Apartments.com/{city}/
- * 
- * For now, creates and adds resulting object to a file within /propertyFloorPlans directory
  * 
  * @param url string
  * @param city string
