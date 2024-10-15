@@ -1,8 +1,6 @@
 import { IProperty } from '../../Interfaces';
 import currencyToNumber from '../../utils';
 
-// data: object[]
-
 /**
  * Used to parse through gathered apartment data and calculate average price for each floorplan according to square footage
  * @params Array of floorplans
