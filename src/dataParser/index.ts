@@ -1,4 +1,4 @@
-import { IProperty } from '../../Interfaces';
+import { IFloorPlan, IProperty } from '../../Interfaces';
 import currencyToNumber from '../../utils';
 
 /**
@@ -7,10 +7,10 @@ import currencyToNumber from '../../utils';
  * @returns Array of averages of floorplans
  */
 export default function dataParser(data: IProperty[]) {
-  const allAverages: any = [];
+  const allAverages: IProperty[] = [];
 
   for (let i = 0; i < data.length; i++) {
-    let curProperty: any = {
+    let curProperty: IProperty = {
       propertyName: data[i].propertyName,
       address: data[i].address,
       floorPlans: []
@@ -33,7 +33,7 @@ export default function dataParser(data: IProperty[]) {
       for (let j = 0; j < floorPlan.details.length; j++) {
         if (floorPlan.details[j].sqFt !== tempObj.sqFt || j === floorPlan.details.length - 1) {
           const detailPrep = {
-            avg: tempObj.total / tempObj.count,
+            avgPrice: tempObj.total / tempObj.count,
             sqFt: tempObj.sqFt
           }
 
