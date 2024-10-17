@@ -5,7 +5,7 @@ import { JSDOM } from 'jsdom';
 import { IFloorPlan, IProperty } from '../../Interfaces';
 dotenv.config();
 
-const allFloorPlans: IProperty[] = [];
+const allProperties: IProperty[] = [];
 
 /**
  * Creates options object for https request
@@ -76,7 +76,7 @@ function subSites(url: string, city: string): void {
           }
 
           property.floorPlans = allFlrPlns;
-          allFloorPlans.push(property);
+          allProperties.push(property);
         } else {
           console.log('Something went wrong?');
         }
@@ -113,7 +113,7 @@ export default function scrapeSite(siteURL: string, city: string): IProperty[] {
         }
       });
     }).end();
-    return allFloorPlans;
+    return allProperties;
   } catch (e) {
     throw(e);
   }
