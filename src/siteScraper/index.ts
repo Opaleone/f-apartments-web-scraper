@@ -34,7 +34,7 @@ export const createOptions = (encodedURL: string): object => {
  */
 async function subSites(url: string, city?: string): Promise<IProperty | undefined> {
   try {
-    const browser = await puppeteer.launch({ 
+    const browser = await puppeteer.launch({
       headless: true,
       args: ['--disable-http2']
     });
@@ -104,7 +104,7 @@ async function subSites(url: string, city?: string): Promise<IProperty | undefin
 export default async function scrapeSite(siteURL: string, city?: string): Promise<IProperty[]> {
   try {
     const propertyURLArr: any = [];
-    const browser = await puppeteer.launch({ 
+    const browser = await puppeteer.launch({
       headless: true,
       args: ['--disable-http2']
     });
