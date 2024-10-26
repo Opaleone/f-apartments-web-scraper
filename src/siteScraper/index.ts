@@ -1,11 +1,12 @@
 import dotenv from 'dotenv';
-import https from 'https';
-import * as cheerio from 'cheerio';
+import puppeteer from 'puppeteer-extra';
+import StealthPlugin from 'puppeteer-extra-plugin-stealth';
 import { JSDOM } from 'jsdom';
 import { IFloorPlan, IProperty } from '../../Interfaces';
-dotenv.config();
+import { delay } from '../../utils';
 
-const allProperties: IProperty[] = [];
+dotenv.config();
+puppeteer.use(StealthPlugin());
 
 /**
  * Creates options object for https request
@@ -31,59 +32,66 @@ export const createOptions = (encodedURL: string): object => {
  * @param url string
  * @param city string
  */
-function subSites(url: string, city: string): void {
+async function subSites(url: string, city?: string): Promise<IProperty | undefined> {
   try {
-    const encodedURL = encodeURIComponent(url);
-    https.request(createOptions(encodedURL), res => {
-      let body = '';
-      res.on('data', chunk => body += chunk).on('end', () => {
-        const $ = cheerio.load(body);
-        const dom = new JSDOM($.html());
+    const browser = await puppeteer.launch({ 
+      headless: true,
+      args: ['--disable-http2']
+    });
+    const page = await browser.newPage();
 
-        const diffFlrPlans = dom.window.document.querySelector('[data-tab-content-id="all"')?.querySelectorAll('.pricingGridItem.multiFamily.hasUnitGrid');
+    await page.goto(url, {
+      waitUntil: 'networkidle2',
+      timeout: 60000
+    })
 
-        const propertyAddress = {
-          address: dom.window.document.querySelector(".propertyAddressContainer")?.querySelector('.delivery-address')?.childNodes[0].textContent?.trim(),
-          city: dom.window.document.querySelector(".propertyAddressContainer")?.childNodes[1].childNodes[3].textContent?.trim(),
-          state: dom.window.document.querySelector(".propertyAddressContainer")?.querySelector('.stateZipContainer')?.childNodes[1].textContent?.trim(),
-          zip: dom.window.document.querySelector(".propertyAddressContainer")?.querySelector('.stateZipContainer')?.childNodes[3].textContent?.trim()
+    const html = await page.content();
+
+    const dom = new JSDOM(html);
+
+    const diffFlrPlans = dom.window.document.querySelector('[data-tab-content-id="all"')?.querySelectorAll('.pricingGridItem.multiFamily.hasUnitGrid');
+
+    const propertyAddress = {
+      address: dom.window.document.querySelector(".propertyAddressContainer")?.querySelector('.delivery-address')?.childNodes[0].textContent?.trim(),
+      city: dom.window.document.querySelector(".propertyAddressContainer")?.childNodes[1].childNodes[3].textContent?.trim(),
+      state: dom.window.document.querySelector(".propertyAddressContainer")?.querySelector('.stateZipContainer')?.childNodes[1].textContent?.trim(),
+      zip: dom.window.document.querySelector(".propertyAddressContainer")?.querySelector('.stateZipContainer')?.childNodes[3].textContent?.trim()
+    }
+
+    const property: IProperty = {
+      propertyName: dom.window.document.querySelector("#propertyName")?.textContent?.trim(),
+      address: `${propertyAddress.address}, ${propertyAddress.city}, ${propertyAddress.state} ${propertyAddress.zip}`,
+      floorPlans: []
+    }
+
+    if (diffFlrPlans) {
+      const allFlrPlns: IFloorPlan[] = [];
+      for (let i = 0; i < diffFlrPlans.length; i++) {
+        const flrPlnObj: IFloorPlan = {
+          name: diffFlrPlans[i].querySelector('.modelLabel')?.childNodes[1].textContent?.trim() ?? undefined,
+          beds: diffFlrPlans[i].querySelector('.detailsLabel')?.childNodes[1].childNodes[1].textContent?.trim() ?? undefined,
+          baths: diffFlrPlans[i].querySelector('.detailsLabel')?.childNodes[1].childNodes[3].textContent?.trim() ?? undefined,
+          details: []
         }
-
-        const property: IProperty = {
-          propertyName: dom.window.document.querySelector("#propertyName")?.textContent?.trim(),
-          address: `${propertyAddress.address}, ${propertyAddress.city}, ${propertyAddress.state} ${propertyAddress.zip}`,
-          floorPlans: []
-        }
-
-        if (diffFlrPlans) {
-          const allFlrPlns: IFloorPlan[] = [];
-          for (let i = 0; i < diffFlrPlans.length; i++) {
-            const flrPlnObj: IFloorPlan = {
-              name: diffFlrPlans[i].querySelector('.modelLabel')?.childNodes[1].textContent?.trim() ?? undefined,
-              beds: diffFlrPlans[i].querySelector('.detailsLabel')?.childNodes[1].childNodes[1].textContent?.trim() ?? undefined,
-              baths: diffFlrPlans[i].querySelector('.detailsLabel')?.childNodes[1].childNodes[3].textContent?.trim() ?? undefined,
-              details: []
-            }
-            for (let j = 0; j < diffFlrPlans[i].querySelectorAll('.unitContainer.js-unitContainer').length; j++) {
-              const detailsObj = {
-                price: diffFlrPlans[i].querySelectorAll('.pricingColumn.column')[j].childNodes[3].textContent?.trim() ?? undefined,
-                sqFt: `${diffFlrPlans[i].querySelectorAll('.sqftColumn.column')[j].childNodes[3].textContent?.trim() ?? undefined} square feet`,
-                whenAvailable: diffFlrPlans[i].querySelectorAll('.dateAvailable')[j].childNodes[2].textContent?.trim() ?? undefined,
-              }
-              flrPlnObj.details.push(detailsObj)
-            }
-            allFlrPlns.push(flrPlnObj)
+        for (let j = 0; j < diffFlrPlans[i].querySelectorAll('.unitContainer.js-unitContainer').length; j++) {
+          const detailsObj = {
+            price: diffFlrPlans[i].querySelectorAll('.pricingColumn.column')[j].childNodes[3].textContent?.trim() ?? undefined,
+            sqFt: `${diffFlrPlans[i].querySelectorAll('.sqftColumn.column')[j].childNodes[3].textContent?.trim() ?? undefined} square feet`,
+            whenAvailable: diffFlrPlans[i].querySelectorAll('.dateAvailable')[j].childNodes[2].textContent?.trim() ?? undefined,
           }
-
-          property.floorPlans = allFlrPlns;
-          allProperties.push(property);
-        } else {
-          console.log('Something went wrong?');
+          flrPlnObj.details.push(detailsObj);
         }
-      })
-    }).end();
+        allFlrPlns.push(flrPlnObj);
+      }
+      property.floorPlans = allFlrPlns;
+      return property;
+    } else {
+      console.log('Something went wrong?');
+      return undefined;
+    }
   } catch (e) {
     console.error(e);
+    return undefined;
   }
 }
 
@@ -93,27 +101,39 @@ function subSites(url: string, city: string): void {
  * @param siteURL 
  * @param city 
  */
-export default function scrapeSite(siteURL: string, city: string): IProperty[] {
+export default async function scrapeSite(siteURL: string, city?: string): Promise<IProperty[]> {
   try {
     const propertyURLArr: any = [];
-    let encodedURL = encodeURIComponent(siteURL);
+    const browser = await puppeteer.launch({ 
+      headless: true,
+      args: ['--disable-http2']
+    });
+    const page = await browser.newPage();
 
-    https.request(createOptions(encodedURL), (res) => {
-      let body = '';
-      res.on('data', chunk => body += chunk).on('end', () => {
-        const $ = cheerio.load(body);
-        $('ul li article').each((i, element) => {
-          if ($(element).attr('data-url')) {
-            propertyURLArr.push($(element).attr('data-url'));
-          }
-        })
+    await page.goto(siteURL, {
+      waitUntil: 'networkidle2',
+      timeout: 60000
+    })
 
-        for (const property of propertyURLArr) {
-          subSites(property, city);
-        }
-      });
-    }).end();
-    return allProperties;
+    const html = await page.content();
+
+    const dom = new JSDOM(html);
+
+    const placardArr = dom.window.document.querySelectorAll(".placard");
+
+    for (const placard of placardArr) {
+      propertyURLArr.push(placard.getAttribute('data-url'));
+    }
+
+    const subSitePromises = propertyURLArr.map(async (property: string) => {
+      delay(1_000, 3_000);
+      const scrapedProperty = subSites(property);
+      return scrapedProperty;
+    })
+
+    const allProperties = await Promise.all(subSitePromises);
+    
+    return allProperties.filter(property => property !== undefined) as IProperty[];
   } catch (e) {
     throw(e);
   }
