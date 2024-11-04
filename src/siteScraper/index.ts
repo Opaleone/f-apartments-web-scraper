@@ -1,30 +1,10 @@
-import dotenv from 'dotenv';
 import puppeteer from 'puppeteer-extra';
 import StealthPlugin from 'puppeteer-extra-plugin-stealth';
 import { JSDOM } from 'jsdom';
 import { IFloorPlan, IProperty } from '../../Interfaces';
 import { delay } from '../../utils';
-
-dotenv.config();
+import { Page } from 'puppeteer';
 puppeteer.use(StealthPlugin());
-
-/**
- * Creates options object for https request
- * ```ts
- * return {
- *  hostname,
- *  path
- * }
- * ```
- * @param encodedURL string
- * @returns object
- */
-export const createOptions = (encodedURL: string): object => {
-  return {
-    hostname: 'api.crawlbase.com',
-    path: `/?token=${process.env.TOKEN}&format=html&url=` + encodedURL
-  }
-}
 
 /**
  * Executes a https request for a property within Apartments.com/{city}/
@@ -32,17 +12,11 @@ export const createOptions = (encodedURL: string): object => {
  * @param url string
  * @param city string
  */
-async function subSites(url: string, city?: string): Promise<IProperty | undefined> {
+async function subSites(url: string, page: Page, city?: string): Promise<IProperty | undefined> {
   try {
-    const browser = await puppeteer.launch({
-      headless: true,
-      args: ['--disable-http2']
-    });
-    const page = await browser.newPage();
-
     await page.goto(url, {
       waitUntil: 'networkidle2',
-      timeout: 60000
+      timeout: 60_000
     })
 
     const html = await page.content();
@@ -65,6 +39,8 @@ async function subSites(url: string, city?: string): Promise<IProperty | undefin
     }
 
     if (diffFlrPlans) {
+      console.log(`Grabbing property information for ${property.propertyName}...`)
+      
       const allFlrPlns: IFloorPlan[] = [];
       for (let i = 0; i < diffFlrPlans.length; i++) {
         const flrPlnObj: IFloorPlan = {
@@ -73,7 +49,8 @@ async function subSites(url: string, city?: string): Promise<IProperty | undefin
           baths: diffFlrPlans[i].querySelector('.detailsLabel')?.childNodes[1].childNodes[3].textContent?.trim() ?? undefined,
           details: []
         }
-        for (let j = 0; j < diffFlrPlans[i].querySelectorAll('.unitContainer.js-unitContainer').length; j++) {
+        console.log(`Grabbing details for ${flrPlnObj.name} floorplan...`)
+        for (let j = 0; j < diffFlrPlans[i].querySelectorAll('.unitContainer.js-unitContainerV3').length; j++) {
           const detailsObj = {
             price: diffFlrPlans[i].querySelectorAll('.pricingColumn.column')[j].childNodes[3].textContent?.trim() ?? undefined,
             sqFt: `${diffFlrPlans[i].querySelectorAll('.sqftColumn.column')[j].childNodes[3].textContent?.trim() ?? undefined} square feet`,
@@ -83,6 +60,7 @@ async function subSites(url: string, city?: string): Promise<IProperty | undefin
         }
         allFlrPlns.push(flrPlnObj);
       }
+      console.log(`Pushing ${property.propertyName} and its floorplans`);
       property.floorPlans = allFlrPlns;
       return property;
     } else {
@@ -91,7 +69,6 @@ async function subSites(url: string, city?: string): Promise<IProperty | undefin
     }
   } catch (e) {
     console.error(e);
-    return undefined;
   }
 }
 
@@ -110,30 +87,42 @@ export default async function scrapeSite(siteURL: string, city?: string): Promis
     });
     const page = await browser.newPage();
 
+    let allProperties: any = []
+
     await page.goto(siteURL, {
       waitUntil: 'networkidle2',
-      timeout: 60000
+      timeout: 60_000
     })
 
     const html = await page.content();
+
+    if (html) {
+      console.log('HTML Content found!');
+    }
 
     const dom = new JSDOM(html);
 
     const placardArr = dom.window.document.querySelectorAll(".placard");
 
+    if (placardArr) {
+      console.log('Properties acquired. Grabbing their URLs now...')
+    }
+
     for (const placard of placardArr) {
       propertyURLArr.push(placard.getAttribute('data-url'));
     }
 
-    const subSitePromises = propertyURLArr.map(async (property: string) => {
-      delay(1_000, 3_000);
-      const scrapedProperty = subSites(property);
-      return scrapedProperty;
-    })
+    if (propertyURLArr) {
+      console.log('URLs secured. Checking each URL now...')
+    }
 
-    const allProperties = await Promise.all(subSitePromises);
-    
-    return allProperties.filter(property => property !== undefined) as IProperty[];
+    for (let i = 0; i < propertyURLArr.length; i++) {
+      delay(1_000, 3_000);
+      const idvProperty = await subSites(propertyURLArr[i], page);
+      allProperties.push(idvProperty);
+    }
+    browser.close();
+    return allProperties;
   } catch (e) {
     throw(e);
   }
