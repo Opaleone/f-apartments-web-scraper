@@ -51,6 +51,7 @@ async function subSites(url: string, page: Page, city?: string): Promise<IProper
         }
         console.log(`Grabbing details for ${flrPlnObj.name} floorplan...`)
         for (let j = 0; j < diffFlrPlans[i].querySelectorAll('.unitContainer.js-unitContainerV3').length; j++) {
+          console.log(`Found details for ${flrPlnObj.name} with sqft: ${diffFlrPlans[i].querySelectorAll('.sqftColumn.column')[j].childNodes[3].textContent?.trim()}`);
           const detailsObj = {
             price: diffFlrPlans[i].querySelectorAll('.pricingColumn.column')[j].childNodes[3].textContent?.trim() ?? undefined,
             sqFt: `${diffFlrPlans[i].querySelectorAll('.sqftColumn.column')[j].childNodes[3].textContent?.trim() ?? undefined} square feet`,
@@ -58,6 +59,7 @@ async function subSites(url: string, page: Page, city?: string): Promise<IProper
           }
           flrPlnObj.details.push(detailsObj);
         }
+        console.log('Pushing details...');
         allFlrPlns.push(flrPlnObj);
       }
       console.log(`Pushing ${property.propertyName} and its floorplans`);
@@ -96,27 +98,20 @@ export default async function scrapeSite(siteURL: string, city?: string): Promis
 
     const html = await page.content();
 
-    if (html) {
-      console.log('HTML Content found!');
-    }
+    if (html) console.log('\nHTML Content found!');
 
     const dom = new JSDOM(html);
 
     const placardArr = dom.window.document.querySelectorAll(".placard");
 
-    if (placardArr) {
-      console.log('Properties acquired. Grabbing their URLs now...')
-    }
+    if (placardArr) console.log('Properties acquired. Grabbing their URLs now...');
 
-    for (const placard of placardArr) {
-      propertyURLArr.push(placard.getAttribute('data-url'));
-    }
+    for (const placard of placardArr) propertyURLArr.push(placard.getAttribute('data-url'));
 
-    if (propertyURLArr) {
-      console.log('URLs secured. Checking each URL now...')
-    }
+    if (propertyURLArr) console.log('URLs secured. Checking each URL now...\n');
 
     for (let i = 0; i < propertyURLArr.length; i++) {
+      console.log(`Checking ${propertyURLArr[i]}\n`);
       delay(1_000, 3_000);
       const idvProperty = await subSites(propertyURLArr[i], page);
       allProperties.push(idvProperty);
