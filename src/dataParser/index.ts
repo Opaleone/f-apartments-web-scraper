@@ -6,7 +6,9 @@ import { currencyToNumber } from '../../utils';
  * @params Array of floorplans
  * @returns Array of averages of floorplans
  */
-export default function dataParser(data: IProperty[]) {
+export default function dataParser(data: IProperty[] | undefined) {
+  if (!data) return;
+
   const allAverages: IProperty[] = [];
   
   for (let i = 0; i < data.length; i++) {
