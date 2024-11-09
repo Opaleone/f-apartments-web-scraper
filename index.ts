@@ -35,7 +35,9 @@ rl.question('Welcome!\n\nWhat location do you want to search?\n', response => {
       })
 
       fs.writeFile(`${propertyFolder}/${fileName}`, JSON.stringify(res), (e) => {
-        console.log(e);
+        if (e) {
+          console.log(e);
+        }
       })
       console.log(`\nCity file successfully created. See file at ./propertyFloorPlans/${fileName}.\n`);
 
@@ -43,7 +45,9 @@ rl.question('Welcome!\n\nWhat location do you want to search?\n', response => {
       const allAverages = dataParser(res);
 
       fs.writeFile(`${averageFolder}/${fileName}`, JSON.stringify(allAverages), (e) => {
-        console.log(e);
+        if (e) {
+          console.log(e);
+        }
       })
       console.log(`\nAverage file written. See file at ./floorPlanAvgs/${fileName}`);
       console.log('\n\nExiting now. Goodbye!\n');
