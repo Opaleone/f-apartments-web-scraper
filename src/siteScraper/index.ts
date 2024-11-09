@@ -7,7 +7,7 @@ import { Page } from 'puppeteer';
 puppeteer.use(StealthPlugin());
 
 /**
- * Executes a https request for a property within Apartments.com/{city}/
+ * Executes a https request for a property within https://www.apartments.com/{city}/
  * 
  * @param url string
  * @param city string
@@ -66,7 +66,7 @@ async function subSites(url: string, page: Page, city?: string): Promise<IProper
       property.floorPlans = allFlrPlns;
       return property;
     } else {
-      console.log('Something went wrong?');
+      console.log(`Properties not found for ${url}`);
       return undefined;
     }
   } catch (e) {
@@ -80,7 +80,7 @@ async function subSites(url: string, page: Page, city?: string): Promise<IProper
  * @param siteURL 
  * @param city 
  */
-export default async function scrapeSite(siteURL: string, city?: string): Promise<IProperty[]> {
+export default async function scrapeSite(siteURL: string, city?: string): Promise<IProperty[] | undefined> {
   try {
     const propertyURLArr: any = [];
     const browser = await puppeteer.launch({
@@ -104,7 +104,8 @@ export default async function scrapeSite(siteURL: string, city?: string): Promis
 
     const placardArr = dom.window.document.querySelectorAll(".placard");
 
-    if (placardArr) console.log('Properties acquired. Grabbing their URLs now...');
+    if (!placardArr.length) return;
+    else console.log('Properties acquired. Grabbing their URLs now...');
 
     for (const placard of placardArr) propertyURLArr.push(placard.getAttribute('data-url'));
 
