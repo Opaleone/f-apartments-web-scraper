@@ -26,3 +26,28 @@ export function formatDate(): string {
 
   return `${curDate[0]}_${time}`;
 }
+
+/**
+ * Used to change color and font of console depending on use case.
+ * 
+ * Different arguments include:
+ *  * 'greeting'
+ *  * 'exit'
+ *  * Leave argument empty to reset console
+ * 
+ * @param c string
+ * @returns string
+ */
+export function consoleOut(c?: string): string {
+  switch (c) {
+    case 'greeting':
+      return "color: green; font-size: 32px;"
+      break;
+    case 'exit':
+      return "color: green; "
+      break;
+    default:
+      // Used to reset console color
+      return '\x1b[0m';
+  }
+}
