@@ -111,7 +111,7 @@ export default async function scrapeSite(siteURL: string, city?: string): Promis
     if (propertyURLArr) console.log('URLs secured. Checking each URL now...\n');
 
     for (let i = 0; i < propertyURLArr.length; i++) {
-      console.log(`Checking ${propertyURLArr[i]}\n`);
+      console.log(`Checking ${propertyURLArr[i]}`);
       delay(1_000, 3_000);
       const idvProperty = await subSites(propertyURLArr[i], page);
       allProperties.push(idvProperty);
