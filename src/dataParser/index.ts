@@ -10,6 +10,8 @@ export default function dataParser(data: IProperty[]) {
   const allAverages: IProperty[] = [];
   
   for (let i = 0; i < data.length; i++) {
+    if (!data[i]) continue;
+
     let curProperty: IProperty = {
       propertyName: data[i].propertyName,
       address: data[i].address,
