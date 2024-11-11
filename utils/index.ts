@@ -1,3 +1,9 @@
+/**
+ * Converts currency string to a number for calculations.
+ * 
+ * @param currencyStr - string | undefined
+ * @returns number
+ */
 export function currencyToNumber(currencyStr: string | undefined): number {
   const cleanStr = currencyStr?.replace(/[^0-9.-]/g, '');
   const numberCon = typeof(cleanStr) === 'string' ? parseFloat(cleanStr) : NaN;
@@ -20,6 +26,11 @@ export function delay(min: number, max: number) {
   return new Promise(res => setTimeout(res, Math.floor(Math.random() * (max - min + 1)) + min));
 }
 
+/**
+ * Formats current time and date to be used for file naming
+ * 
+ * @returns string
+ */
 export function formatDate(): string {
   const curDate = new Date().toJSON().split('T')
   const time = new Date().toLocaleTimeString('en-US').split(' ')[0];
@@ -28,30 +39,14 @@ export function formatDate(): string {
 }
 
 /**
- * Used to change color and font of console depending on use case.
+ * Formats the city name for console log into one that's more human readable
  * 
- * Different arguments include:
- *  * 'greeting'
- *  * 'exit'
- *  * Leave argument empty to reset console
+ * I.E.
+ *  Austin, TX
  * 
- * @param c string
+ * @param city - string 
  * @returns string
  */
-export function consoleOut(c?: string): string {
-  switch (c) {
-    case 'greeting':
-      return "color: green; font-size: 32px;"
-      break;
-    case 'exit':
-      return "color: green; "
-      break;
-    default:
-      // Used to reset console color
-      return '\x1b[0m';
-  }
-}
-
 export function formatCity(city: string): string {
   let formattedCity = '';
   const cityArr = city.split('-');
@@ -68,3 +63,17 @@ export function formatCity(city: string): string {
 
   return formattedCity += `, ${state}`;
 }
+
+/**
+ * Prints Ascii Art for console.
+ * 
+ * Says welcome.
+ */
+export const welcome = `
+ _       __     __                        
+| |     / /__  / /________  ____ ___  ___ 
+| | /| / / _ \\/ / ___/ __ \\/ __ \`__ \\/ _ \\
+| |/ |/ /  __/ / /__/ /_/ / / / / / /  __/
+|__/|__/\\___/_/\\___/\\____/_/ /_/ /_/\\___/ 
+                                          
+`
