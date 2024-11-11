@@ -1,4 +1,4 @@
-import readline from 'readline';
+import readline from 'node:readline';
 import fs from 'node:fs';
 import path from 'node:path';
 import { styleText } from 'node:util';
@@ -12,6 +12,9 @@ const rl = readline.createInterface({
   input: process.stdin,
   output: process.stdout
 });
+
+const ac = new AbortController();
+const signal = ac.signal;
 
 console.log(styleText(['green'], welcome))
 
@@ -61,3 +64,11 @@ rl.question('What location do you want to search?\n', city => {
   });
   rl.close();
 });
+
+signal.addEventListener('abort', () => {
+  console.log(styleText(['redBright'], '\nLocation not entered in time. Try again!'));
+  rl.close();
+  return;
+}, { once: true });
+
+setTimeout(() => ac.abort(), 60_000);
