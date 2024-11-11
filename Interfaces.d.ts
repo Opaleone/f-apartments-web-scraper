@@ -44,7 +44,9 @@ export interface IFloorPlan {
  */
 export interface IProperty {
   propertyName: string | undefined,
-  address: string | undefined
+  address: string | undefined,
+  phone: string | undefined,
+  leasingOffice: string | undefined
   floorPlans: IFloorPlan[]
 }
 /**
