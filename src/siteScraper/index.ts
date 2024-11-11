@@ -4,22 +4,25 @@ import { JSDOM } from 'jsdom';
 import { IFloorPlan, IProperty } from '../../Interfaces';
 import { delay } from '../../utils';
 import { Page } from 'puppeteer';
+import { styleText } from 'node:util';
 puppeteer.use(StealthPlugin());
 
 /**
  * Executes a https request for a property within https://www.apartments.com/{city}/
  * 
  * @param url string
- * @param city string
+ * @param page Instance of Page from puppeteer
  */
-async function subSites(url: string, page: Page, city?: string): Promise<IProperty | undefined> {
+async function subSites(url: string, page: Page): Promise<IProperty | undefined> {
   try {
     await page.goto(url, {
       waitUntil: 'networkidle2',
       timeout: 60_000
-    })
+    });
 
     const html = await page.content();
+
+    if (html) console.log(styleText(['green'], `Content found!\n`));
 
     const dom = new JSDOM(html);
 
@@ -35,11 +38,13 @@ async function subSites(url: string, page: Page, city?: string): Promise<IProper
     const property: IProperty = {
       propertyName: dom.window.document.querySelector("#propertyName")?.textContent?.trim(),
       address: `${propertyAddress.address}, ${propertyAddress.city}, ${propertyAddress.state} ${propertyAddress.zip}`,
+      phone: dom.window.document.querySelector(".phoneNumber")?.textContent?.split(' ').join(''),
+      leasingOffice: dom.window.document.querySelector(".leasingOfficeAddressContainer")?.childNodes[3].textContent?.trim(),
       floorPlans: []
     }
 
     if (diffFlrPlans) {
-      console.log(`Grabbing property information for ${property.propertyName}...`)
+      console.log(`Grabbing property information for ${property.propertyName}...`);
       
       const allFlrPlns: IFloorPlan[] = [];
       for (let i = 0; i < diffFlrPlans.length; i++) {
@@ -62,11 +67,11 @@ async function subSites(url: string, page: Page, city?: string): Promise<IProper
         console.log('Pushing details...');
         allFlrPlns.push(flrPlnObj);
       }
-      console.log(`Pushing ${property.propertyName} and its floorplans`);
+      console.log(styleText(['green'], `Pushing ${property.propertyName} and its floorplans`));
       property.floorPlans = allFlrPlns;
       return property;
     } else {
-      console.log(`Properties not found for ${url}`);
+      console.log(styleText(['yellow', 'underline'], `Properties not found for ${url}`));
       return undefined;
     }
   } catch (e) {
@@ -77,10 +82,9 @@ async function subSites(url: string, page: Page, city?: string): Promise<IProper
 /**
  * Used to grab urls of each property in given siteUrl then loop through each url and scrape data per property
  * 
- * @param siteURL 
- * @param city 
+ * @param siteURL
  */
-export default async function scrapeSite(siteURL: string, city?: string): Promise<IProperty[] | undefined> {
+export default async function scrapeSite(siteURL: string): Promise<IProperty[] | undefined> {
   try {
     const propertyURLArr: any = [];
     const browser = await puppeteer.launch({
@@ -98,21 +102,21 @@ export default async function scrapeSite(siteURL: string, city?: string): Promis
 
     const html = await page.content();
 
-    if (html) console.log('\nHTML Content found!');
+    if (html) console.log(styleText(['green'], '\nHTML Content found!\n'));
 
     const dom = new JSDOM(html);
 
     const placardArr = dom.window.document.querySelectorAll(".placard");
 
     if (!placardArr.length) return;
-    else console.log('Properties acquired. Grabbing their URLs now...');
+    else console.log('Properties acquired. Grabbing their URLs now...\n');
 
     for (const placard of placardArr) propertyURLArr.push(placard.getAttribute('data-url'));
 
     if (propertyURLArr) console.log('URLs secured. Checking each URL now...\n');
 
     for (let i = 0; i < propertyURLArr.length; i++) {
-      console.log(`Checking ${propertyURLArr[i]}`);
+      console.log(`Checking ${propertyURLArr[i]}\n`);
       delay(1_000, 3_000);
       const idvProperty = await subSites(propertyURLArr[i], page);
       allProperties.push(idvProperty);
