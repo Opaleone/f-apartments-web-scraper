@@ -5,20 +5,15 @@ import { styleText } from 'node:util';
 import { formatCity, formatDate, welcome } from './utils';
 import scrapeSite from './src/siteScraper';
 import dataParser from './src/dataParser';
+import { input } from '@inquirer/prompts';
 
 const locationRegex = /^([a-z]-?){1,40}[-]{1}?([a-z]){1,2}$/g;
 
-const rl = readline.createInterface({
-  input: process.stdin,
-  output: process.stdout
-});
+console.log(styleText(['green'], welcome));
 
-const ac = new AbortController();
-const signal = ac.signal;
+(async () => {
+  const city = await input({ message: "What location do you want to search?" }, { clearPromptOnDone: true });
 
-console.log(styleText(['green'], welcome))
-
-rl.question('What location do you want to search?\n', city => {
   if (!locationRegex.test(city)) {
     throw new Error('Incorrect Format. Try again!');
   }
@@ -59,16 +54,7 @@ rl.question('What location do you want to search?\n', city => {
       console.log(styleText(['green'], `\nAverage file written. See file at ${path.join(propertyFolder, fileName)}`));
       console.log(styleText(['magentaBright'], `\n\nExiting now.\nGoodbye!`));
     } catch (e) {
-      console.log(`Could not generate file(s): `, e);
+      console.error(`Could not generate file(s): \n`, e);
     }
   });
-  rl.close();
-});
-
-signal.addEventListener('abort', () => {
-  console.log(styleText(['redBright'], '\nLocation not entered in time. Try again!'));
-  rl.close();
-  return;
-}, { once: true });
-
-setTimeout(() => ac.abort(), 60_000);
+})();
