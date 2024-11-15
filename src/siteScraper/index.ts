@@ -16,7 +16,7 @@ puppeteer.use(StealthPlugin());
 async function subSites(url: string, page: Page): Promise<IProperty | undefined> {
   try {
     await page.goto(url, {
-      waitUntil: 'networkidle2',
+      waitUntil: 'domcontentloaded',
       timeout: 60_000
     });
 
@@ -92,11 +92,16 @@ export default async function scrapeSite(siteURL: string): Promise<IProperty[] |
       args: ['--disable-http2']
     });
     const page = await browser.newPage();
+    await page.setRequestInterception(true);
+    page.on('request', req => {
+      if (req.resourceType() === 'image') req.abort();
+      else req.continue();
+    })
 
     let allProperties: any = []
 
     await page.goto(siteURL, {
-      waitUntil: 'networkidle2',
+      waitUntil: 'domcontentloaded',
       timeout: 60_000
     })
 
