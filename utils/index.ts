@@ -22,7 +22,7 @@ export function currencyToNumber(currencyStr: string | undefined): number {
  * @param max number
  * @returns Promise
  */
-export function delay(min: number, max: number) {
+export function delay(min: number, max: number): Promise<void> {
   return new Promise(res => setTimeout(res, Math.floor(Math.random() * (max - min + 1)) + min));
 }
 
