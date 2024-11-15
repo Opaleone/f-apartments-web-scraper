@@ -61,7 +61,7 @@ export default function dataParser(data: IProperty[] | undefined, cityName: stri
         if (sqFt !== tempObj.sqFt || whenAvailable !== tempObj.whenAvailable) {
           // Push the current group's average
           floorPlanObj.averages.push({
-            avgPrice: tempObj.total / tempObj.count,
+            avgPrice: Math.round(tempObj.total / tempObj.count),
             sqFt: tempObj.sqFt,
             whenAvailable: tempObj.whenAvailable
           });
@@ -81,7 +81,7 @@ export default function dataParser(data: IProperty[] | undefined, cityName: stri
       }
       // Push the last calculated average
       floorPlanObj.averages.push({
-        avgPrice: tempObj.total / tempObj.count,
+        avgPrice: Math.round(tempObj.total / tempObj.count),
         sqFt: tempObj.sqFt,
         whenAvailable: tempObj.whenAvailable
       });
