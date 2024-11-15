@@ -8,8 +8,6 @@ export function currencyToNumber(currencyStr: string | undefined): number {
   const cleanStr = currencyStr?.replace(/[^0-9.-]/g, '');
   const numberCon = typeof(cleanStr) === 'string' ? parseFloat(cleanStr) : NaN;
 
-  if (isNaN(numberCon)) return NaN;
-
   return numberCon;
 }
 
