@@ -56,7 +56,7 @@ export interface IProperty {
  *  floorplanName: string | undefined,
  *  beds: string | undefined,
  *  baths: string | undefined,
- *  averages: any[]
+ *  averages: IDetails[]
  * }
  * ```
  */
