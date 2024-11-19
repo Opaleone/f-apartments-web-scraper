@@ -29,7 +29,7 @@ export interface IFloorPlan {
   name: string | undefined,
   beds: string | undefined,
   baths: string | undefined,
-  details: IDetails[]
+  details: IDetails[],
 }
 /**
  * Type definition for property object.
@@ -47,7 +47,7 @@ export interface IProperty {
   address: string | undefined,
   phone: string | undefined,
   leasingOffice: string | undefined
-  floorPlans: IFloorPlan[]
+  floorplans: IFloorPlan[]
 }
 /**
  * Type definition for Average object
@@ -60,9 +60,9 @@ export interface IProperty {
  * }
  * ```
  */
-export interface IAverage {
-  floorplanName: string | undefined,
-  beds: string | undefined,
-  baths: string | undefined,
-  averages: IDetails[]
+
+export interface IAverageDetails {
+  price: number | undefined,
+  sqFt: string | undefined,
+  whenAvailable: string | undefined
 }

@@ -40,7 +40,7 @@ async function subSites(url: string, page: Page): Promise<IProperty | undefined>
       address: `${propertyAddress.address}, ${propertyAddress.city}, ${propertyAddress.state} ${propertyAddress.zip}`,
       phone: dom.window.document.querySelector(".phoneNumber")?.textContent?.split(' ').join(''),
       leasingOffice: dom.window.document.querySelector(".leasingOfficeAddressContainer")?.childNodes[3].textContent?.trim(),
-      floorPlans: []
+      floorplans: []
     }
 
     if (diffFlrPlans) {
@@ -68,7 +68,7 @@ async function subSites(url: string, page: Page): Promise<IProperty | undefined>
         allFlrPlns.push(flrPlnObj);
       }
       console.log(styleText(['green'], `Pushing ${property.propertyName} and its floorplans`));
-      property.floorPlans = allFlrPlns;
+      property.floorplans = allFlrPlns;
       return property;
     } else {
       console.log(styleText(['yellow', 'underline'], `Properties not found for ${url}`));
