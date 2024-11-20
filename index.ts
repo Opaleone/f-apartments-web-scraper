@@ -1,5 +1,3 @@
-// import fs from 'node:fs';
-import path from 'node:path';
 import axios from 'axios';
 import { styleText } from 'node:util';
 import { formatCity, welcome } from './utils';
@@ -8,6 +6,7 @@ import dataParser from './src/dataParser';
 import { input } from '@inquirer/prompts';
 
 const locationRegex = /^([a-z]-?){1,40}[-]{1}?([a-z]){1,2}$/g;
+const baseURL = 'http://localhost:3001/api';
 
 console.log(styleText(['green'], welcome));
 
@@ -18,17 +17,27 @@ console.log(styleText(['green'], welcome));
     throw new Error('Incorrect Format. Try again!');
   }
 
+  const cityStateArr = formatCity(city);
+
+  const searchExist = await axios.get(`${baseURL}/city/check`, {
+    params: {
+      cityName: cityStateArr[0],
+      state: cityStateArr[1]
+    }
+  })
+
+  if (searchExist) {
+    console.log(searchExist.data);
+    return;
+  }
+
   scrapeSite(`https://www.apartments.com/${city}/`).then(async (res) => {
     if (!res) {
       throw new Error('No Properties found!');
     }
 
-    console.log('\n\nGenerating files...\n');
+    console.log('\n\nSaving to Database...\n');
     try {
-      const baseURL = 'http://localhost:3001/api';
-      const cityAndState = formatCity(city);
-      const cityArr = cityAndState.split(', ');
-
       const propertyIds = [];
       
       for (let i = 0; i < res.length; i++) {
@@ -79,10 +88,12 @@ console.log(styleText(['green'], welcome));
       }
 
       const cityDB = await axios.post(`${baseURL}/city/create`, {
-        cityName: cityArr[0],
-        state: cityArr[1],
+        cityName: cityStateArr[0],
+        state: cityStateArr[1],
         properties: propertyIds
       })
+
+      console.log(cityDB.data);
 
       if (cityDB) {
         console.log(styleText(['green'], `${cityDB.data.cityName}, ${cityDB.data.state} created with it's properties successfully!\n`))
