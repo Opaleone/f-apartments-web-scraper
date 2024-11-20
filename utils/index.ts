@@ -45,7 +45,7 @@ export function formatDate(): string {
  * @param city - string 
  * @returns string
  */
-export function formatCity(city: string): string {
+export function formatCity(city: string): string[] {
   let formattedCity = '';
   const cityArr = city.split('-');
   const state = cityArr.pop()?.toUpperCase();
@@ -59,7 +59,7 @@ export function formatCity(city: string): string {
     else formattedCity += `${firstLetter}${restOfWord.join('')} `;
   }
 
-  return formattedCity += `, ${state}`;
+  return [formattedCity, state ? state : ''];
 }
 
 /**
