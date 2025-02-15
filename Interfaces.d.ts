@@ -47,8 +47,10 @@ export interface IProperty {
   address: string | undefined,
   phone: string | undefined,
   leasingOffice: string | undefined
-  floorplans: IFloorPlan[]
+  floorplans: IFloorPlan[],
+  uniqueFeatures: string[]
 }
+
 /**
  * Type definition for Average object
  * ```ts
