@@ -27,6 +27,7 @@ async function subSites(url: string, page: Page): Promise<IProperty | undefined>
     const dom = new JSDOM(html);
 
     const diffFlrPlans = dom.window.document.querySelector('[data-tab-content-id="all"')?.querySelectorAll('.pricingGridItem.multiFamily.hasUnitGrid');
+    const uniqueFeaturesArr = dom.window.document.querySelector('.uniqueFeatures')?.querySelectorAll('.uniqueAmenity');
 
     const propertyAddress = {
       address: dom.window.document.querySelector(".propertyAddressContainer")?.querySelector('.delivery-address')?.childNodes[0].textContent?.trim(),
@@ -40,7 +41,8 @@ async function subSites(url: string, page: Page): Promise<IProperty | undefined>
       address: `${propertyAddress.address}, ${propertyAddress.city}, ${propertyAddress.state} ${propertyAddress.zip}`,
       phone: dom.window.document.querySelector(".phoneNumber")?.textContent?.split(' ').join(''),
       leasingOffice: dom.window.document.querySelector(".leasingOfficeAddressContainer")?.childNodes[3].textContent?.trim(),
-      floorplans: []
+      floorplans: [],
+      uniqueFeatures: []
     }
 
     if (diffFlrPlans) {
@@ -67,7 +69,16 @@ async function subSites(url: string, page: Page): Promise<IProperty | undefined>
         console.log('Pushing details...');
         allFlrPlns.push(flrPlnObj);
       }
-      console.log(styleText(['green'], `Pushing ${property.propertyName} and its floorplans`));
+
+      if (uniqueFeaturesArr) {
+        for (const feature of uniqueFeaturesArr) {
+          if (feature?.textContent?.trim()) {
+            property.uniqueFeatures?.push(feature.textContent.trim())
+          }
+        }
+      }
+
+      console.log(styleText(['green'], `Pushing ${property.propertyName} information`));
       property.floorplans = allFlrPlns;
       return property;
     } else {
