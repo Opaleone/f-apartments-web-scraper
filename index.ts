@@ -4,9 +4,11 @@ import { formatCity, welcome } from './utils';
 import scrapeSite from './src/siteScraper';
 import dataParser from './src/dataParser';
 import { input } from '@inquirer/prompts';
+import dotenv from 'dotenv';
+dotenv.config();
 
 const locationRegex = /^([a-z]-?){1,40}[-]{1}?([a-z]){1,2}$/g;
-const baseURL = 'http://localhost:3001/api';
+const baseURL = process.env.baseURL;
 
 console.log(styleText(['green'], welcome));
 
@@ -26,7 +28,7 @@ console.log(styleText(['green'], welcome));
     }
   })
 
-  if (searchExist) {
+  if (searchExist.data) {
     console.log(searchExist.data);
     return;
   }
@@ -41,6 +43,7 @@ console.log(styleText(['green'], welcome));
       const propertyIds = [];
       
       for (let i = 0; i < res.length; i++) {
+        if (!res[i]) continue;
         const floorplanIds: string[] = [];
 
         for (let j = 0; j < res[i].floorplans.length; j++ ) {
@@ -81,7 +84,8 @@ console.log(styleText(['green'], welcome));
           address: res[i].address,
           phone: res[i].phone,
           leasingOffice: res[i].leasingOffice,
-          floorplans: floorplanIds
+          floorplans: floorplanIds,
+          uniqueFeatures: res[i].uniqueFeatures
         })
 
         propertyIds.push(property.data._id);
@@ -90,7 +94,8 @@ console.log(styleText(['green'], welcome));
       const cityDB = await axios.post(`${baseURL}/city/create`, {
         cityName: cityStateArr[0],
         state: cityStateArr[1],
-        properties: propertyIds
+        properties: propertyIds,
+        refresh: Date.now() + (7*24*60*60*1_000)
       })
 
       console.log(cityDB.data);
@@ -101,7 +106,7 @@ console.log(styleText(['green'], welcome));
 
       console.log(styleText(['magentaBright'], `\n\nExiting now.\nGoodbye!`));
     } catch (e) {
-      console.error(`Could not generate file(s): \n`, e);
+      console.error(`Error found:\n`, e);
     }
   });
 })();
